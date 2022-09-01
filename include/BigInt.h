@@ -10,10 +10,11 @@ namespace estd {
     class BigInt {
     private:
         bool isNegative = false;
-
         std::deque<uint32_t> number; //stored in blocks of 9x base10 digits maxBlock: 999,999,999
 
-        bool isZero() const { return (number.size() == 0) || ((number.size() == 1) && (number[0] == 0)); }
+        BigInt(std::deque<uint32_t> d) { number = d; }
+
+        bool isZero() const { return (number.size() == 1) && (number[0] == 0); }
 
         BigInt& trimLeadingZeros() {
             while (number.size() > 0) {
@@ -35,7 +36,7 @@ namespace estd {
         BigInt unsignedAdd(const BigInt& left, const BigInt& right) const {
             uint64_t buffer = 0;
 
-            BigInt result;
+            BigInt result = std::deque<uint32_t>();
 
             auto iLeft = left.number.rbegin();
             auto iRight = right.number.rbegin();
@@ -146,7 +147,7 @@ namespace estd {
             right.isNegative = false;
 
 
-            if (right == 0) throw std::runtime_error("Cannot divide by zero");
+            if (right == 0) throw std::invalid_argument("Cannot divide by zero");
             if (isMagnitudeLessThan(left, right)) return {0, left};
             if (left == 0) return {0, 0};
 
@@ -211,7 +212,7 @@ namespace estd {
 
     public:
         //Constructors
-        BigInt(){};
+        BigInt() { this->operator=(int64_t(0)); };
 
         template <typename T>
         BigInt(T val) {
@@ -223,6 +224,7 @@ namespace estd {
             *this = std::string(strNum);
             return *this;
         }
+
         BigInt& operator=(std::string strNum) {
             number.clear();
             //TODO: check that the number fits all the criterea
@@ -230,6 +232,11 @@ namespace estd {
                 isNegative = true;
                 strNum = strNum.substr(1);
             }
+
+            for(size_t i = 0; i < strNum.size(); i++){
+                if(strNum[i] < '0' || strNum[i] >'9' ) throw std::invalid_argument("Cannot parse BigInt");
+            }
+
             int right = strNum.length();
             int left = right - 9;
             if (left < 0) left = 0;
@@ -289,7 +296,7 @@ namespace estd {
 
         BigInt operator*(BigInt right) const {
             const BigInt& left = *this;
-            BigInt result;
+            BigInt result = 0;
 
             result = unsignedMultiply(left, right);
             if (left.isNegative != right.isNegative) result.isNegative = true;
@@ -299,7 +306,7 @@ namespace estd {
 
         BigInt& operator*=(const BigInt& right) { return (*this) = (*this) * right; }
 
-        BigInt operator/(const BigInt& right) { //TODO
+        BigInt operator/(const BigInt& right) {
             BigInt& left = *this;
 
             auto result = unsignedDivide(left, right);
@@ -322,7 +329,7 @@ namespace estd {
         BigInt& operator%=(const BigInt& right) { return (*this) = (*this) % right; }
 
         BigInt power(BigInt p) {
-            if (isZero()) return 0;
+            if (p == 0) return 0;
             // auto result = powerIterative(*this, p);
             std::map<BigInt, BigInt> history = {{1, *this}, {0, 1}};
             auto result = powerRecursive(p, history);
@@ -354,8 +361,10 @@ namespace estd {
         //Comparators
         bool operator==(const BigInt& right) const {
             const BigInt& left = *this;
-            if (left.isZero() && right.isZero()) return true;
+
+            if (left.isZero() && left.isZero()) return true;
             if (left.number.size() != right.number.size()) return false;
+            if (left.isNegative != right.isNegative) return false;
             for (size_t i = 0; i < left.number.size(); i++) {
                 if (left.number[i] != right.number[i]) return false;
             }
@@ -440,7 +449,7 @@ namespace estd {
             return int64_t(result);
         }
         std::string toString() const {
-            //if(number.size() == 0) return "0";
+            if (number.size() == 0) return "nan";
             std::stringstream ss;
             if (isNegative) ss << "-";
             for (auto token : number) {
