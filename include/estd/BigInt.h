@@ -8,7 +8,7 @@
 
 namespace estd {
     class BigInt {
-    private:
+    protected:
         bool isNegative = false;
         std::deque<uint32_t> number; //stored in blocks of 9x base10 digits maxBlock: 999,999,999
 
