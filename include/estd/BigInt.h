@@ -7,7 +7,9 @@
 #include <sstream>
 
 namespace estd {
+    class BigDecimal;
     class BigInt {
+        friend class BigDecimal;
     protected:
         bool isNegative = false;
         std::deque<uint32_t> number; //stored in blocks of 9x base10 digits maxBlock: 999,999,999
@@ -227,14 +229,18 @@ namespace estd {
 
         BigInt& operator=(std::string strNum) {
             number.clear();
-            //TODO: check that the number fits all the criterea
+
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInt");
+
             if (strNum[0] == '-') {
                 isNegative = true;
                 strNum = strNum.substr(1);
             }
 
-            for(size_t i = 0; i < strNum.size(); i++){
-                if(strNum[i] < '0' || strNum[i] >'9' ) throw std::invalid_argument("Cannot parse BigInt");
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInt");
+
+            for (size_t i = 0; i < strNum.size(); i++) {
+                if (strNum[i] < '0' || strNum[i] > '9') throw std::invalid_argument("Cannot parse BigInt");
             }
 
             int right = strNum.length();
@@ -247,21 +253,47 @@ namespace estd {
                 left = right - 9;
                 if (left < 0) left = 0;
             }
+            trimLeadingZeros();
             return *this;
         }
 
-        BigInt& operator=(int64_t n) {
+        BigInt& operator=(intmax_t n) {
             number.clear();
+            isNegative = false;
             if (n < 0) {
                 n = -n;
                 isNegative = true;
             }
+
             while (n != 0) {
                 number.push_front(n % 1000000000);
                 n /= 1000000000;
             }
 
             return *this;
+        }
+
+        BigInt& operator=(uintmax_t n) {
+            number.clear();
+
+            isNegative = false;
+
+            while (n != 0) {
+                number.push_front(n % 1000000000);
+                n /= 1000000000;
+            }
+
+            return *this;
+        }
+
+        template <class T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>  // template for integer types
+        BigInt& operator=(T n) {
+            static_assert(std::is_integral<T>::value, "Template cannot be instantiated");
+            if constexpr (std::is_unsigned<T>::value) {
+                return operator=(uintmax_t(n));
+            } else {
+                return operator=(intmax_t(n));
+            }
         }
 
         //Operations
@@ -328,7 +360,7 @@ namespace estd {
 
         BigInt& operator%=(const BigInt& right) { return (*this) = (*this) % right; }
 
-        BigInt power(BigInt p) {
+        BigInt power(BigInt p) const {
             if (p == 0) return 0;
             // auto result = powerIterative(*this, p);
             std::map<BigInt, BigInt> history = {{1, *this}, {0, 1}};
@@ -338,6 +370,8 @@ namespace estd {
                 result.isNegative = this->isNegative;
             return result;
         }
+
+        // BigInt power(BigDecimal p) const;
 
         BigInt operator++(int) {
             BigInt oldThis = *this;
@@ -470,6 +504,8 @@ namespace estd {
             if (result <= 0) result = 1;
             return result;
         }
+
+        operator BigDecimal();
 
         // TODO:
         // DEFINE_BIN_OP(^) // makes no sense for long ints, will just be all 1s  if we assume leading zeros
