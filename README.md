@@ -1,12 +1,12 @@
 # BigNumbers
 
-A c++ / cpp implementation of Big Integers and Big Decimal (TODO: Big Decimal)
+A c++ / cpp implementation of Big Integers and Big Decimal (BigInt and BigDec)
 
 Sample usage:
 
 
 ```c++
-#include <estd/BigInt.h>
+#include <estd/BigInteger.h>
 #include <iostream>
 
 using namespace std;
