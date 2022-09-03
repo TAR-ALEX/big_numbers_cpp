@@ -1,6 +1,6 @@
 # BigNumbers
 
-A c++ / cpp implementation of Big Integers and Big Decimal (BigInt and BigDec)
+A c++ / cpp implementation of Big Integer and Big Decimal (BigInt and BigDec)
 
 Sample usage:
 
