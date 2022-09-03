@@ -8,17 +8,18 @@
 
 namespace estd {
     class BigDecimal;
-    class BigInt {
+    class BigInteger {
         friend class BigDecimal;
+
     protected:
         bool isNegative = false;
         std::deque<uint32_t> number; //stored in blocks of 9x base10 digits maxBlock: 999,999,999
 
-        BigInt(std::deque<uint32_t> d) { number = d; }
+        BigInteger(std::deque<uint32_t> d) { number = d; }
 
         bool isZero() const { return (number.size() == 1) && (number[0] == 0); }
 
-        BigInt& trimLeadingZeros() {
+        BigInteger& trimLeadingZeros() {
             while (number.size() > 0) {
                 if (number[0] == 0) number.pop_front();
                 else
@@ -28,17 +29,17 @@ namespace estd {
             return *this;
         }
 
-        BigInt ninesComplement() const {
-            BigInt result = *this;
+        BigInteger ninesComplement() const {
+            BigInteger result = *this;
             for (size_t i = 0; i < number.size(); i++) { result.number[i] = 999999999 - result.number[i]; }
             return result;
         }
 
         // (sign is ignored)
-        BigInt unsignedAdd(const BigInt& left, const BigInt& right) const {
+        BigInteger unsignedAdd(const BigInteger& left, const BigInteger& right) const {
             uint64_t buffer = 0;
 
-            BigInt result = std::deque<uint32_t>();
+            BigInteger result = std::deque<uint32_t>();
 
             auto iLeft = left.number.rbegin();
             auto iRight = right.number.rbegin();
@@ -71,23 +72,23 @@ namespace estd {
         }
 
         //PRECONDITION: left MUST be greater than right! (sign is ignored)
-        BigInt unsignedSubtract(const BigInt& left, const BigInt& right) const {
-            BigInt result = unsignedAdd(left.ninesComplement(), right).ninesComplement();
+        BigInteger unsignedSubtract(const BigInteger& left, const BigInteger& right) const {
+            BigInteger result = unsignedAdd(left.ninesComplement(), right).ninesComplement();
             return result.trimLeadingZeros();
         }
 
-        BigInt unsignedMultiply(const BigInt& left, const BigInt& right) const {
+        BigInteger unsignedMultiply(const BigInteger& left, const BigInteger& right) const {
             return unsignedMultiplyKaratsuba(left, right);
         }
 
-        BigInt unsignedMultiplyKaratsuba(const BigInt left, const BigInt right) const {
+        BigInteger unsignedMultiplyKaratsuba(const BigInteger left, const BigInteger right) const {
             if (left.number.size() <= 50 || right.number.size() <= 50) return unsignedMultiplySimple(left, right);
 
             size_t splitSize = left.number.size();
             if (right.number.size() < splitSize) splitSize = right.number.size();
             splitSize /= 2;
 
-            BigInt high1, low1, high2, low2;
+            BigInteger high1, low1, high2, low2;
 
             // [0] [size-splitSize] [size]
             high1.number =
@@ -98,9 +99,9 @@ namespace estd {
             low2.number =
                 std::deque<uint32_t>(right.number.begin() + right.number.size() - splitSize, right.number.end());
 
-            BigInt z0 = unsignedMultiplyKaratsuba(low1, low2);
-            BigInt z1 = unsignedMultiplyKaratsuba(unsignedAdd(low1, high1), unsignedAdd(low2, high2));
-            BigInt z2 = unsignedMultiplyKaratsuba(high1, high2);
+            BigInteger z0 = unsignedMultiplyKaratsuba(low1, low2);
+            BigInteger z1 = unsignedMultiplyKaratsuba(unsignedAdd(low1, high1), unsignedAdd(low2, high2));
+            BigInteger z2 = unsignedMultiplyKaratsuba(high1, high2);
 
             z1 = z1 - (z2 + z0);
             for (size_t i = 0; i < splitSize; i++) z1.number.push_back(0);
@@ -110,18 +111,18 @@ namespace estd {
             return z2 + z1 + z0;
         }
 
-        BigInt unsignedMultiplySimple(const BigInt& left, const BigInt& right) const {
+        BigInteger unsignedMultiplySimple(const BigInteger& left, const BigInteger& right) const {
             if (right == 0 || left == 0) return 0;
             uint64_t buffer = 0;
 
-            BigInt result = 0;
+            BigInteger result = 0;
 
             uint64_t vLeft;
             uint64_t vRight;
 
             int prepush = 0;
             for (auto iRight = right.number.rbegin(); iRight != right.number.rend(); ++iRight) {
-                BigInt tmp;
+                BigInteger tmp;
                 for (int i = 0; i < prepush; i++) tmp.number.push_front(0);
                 prepush++;
                 for (auto iLeft = left.number.rbegin(); iLeft != left.number.rend(); ++iLeft) {
@@ -142,8 +143,8 @@ namespace estd {
             return result;
         }
 
-        std::pair<BigInt, BigInt> unsignedDivide(BigInt left, BigInt right) const {
-            std::pair<BigInt, BigInt> result = {0, 0};
+        std::pair<BigInteger, BigInteger> unsignedDivide(BigInteger left, BigInteger right) const {
+            std::pair<BigInteger, BigInteger> result = {0, 0};
 
             left.isNegative = false;
             right.isNegative = false;
@@ -153,13 +154,13 @@ namespace estd {
             if (isMagnitudeLessThan(left, right)) return {0, left};
             if (left == 0) return {0, 0};
 
-            BigInt leftBound = 0;
-            BigInt rightBound = left;
+            BigInteger leftBound = 0;
+            BigInteger rightBound = left;
 
-            BigInt& target = left;
+            BigInteger& target = left;
             while (leftBound <= rightBound) {
-                BigInt guess = (leftBound + rightBound) >> 1;
-                BigInt val = guess * right;
+                BigInteger guess = (leftBound + rightBound) >> 1;
+                BigInteger val = guess * right;
 
                 if (val <= target && (val + right) > target) { return {guess, target - val}; }
                 if (target < val) {
@@ -172,11 +173,11 @@ namespace estd {
             return result;
         }
 
-        BigInt powerIterative(BigInt x, BigInt n) const {
+        BigInteger powerIterative(BigInteger x, BigInteger n) const {
             if (n == 0) return 1;
             if (n == 1) return x;
 
-            BigInt y = 1;
+            BigInteger y = 1;
 
             while (n > 1) {
                 if (n.number[n.number.size() - 1] << 31) { // if is odd
@@ -190,17 +191,17 @@ namespace estd {
             return unsignedMultiply(x, y);
         }
 
-        BigInt powerRecursive(BigInt p, std::map<BigInt, BigInt>& history) const {
+        BigInteger powerRecursive(BigInteger p, std::map<BigInteger, BigInteger>& history) const {
             if (history.count(p)) return history[p];
 
-            BigInt res = powerRecursive(p >> 1, history) * powerRecursive(p - (p >> 1), history);
+            BigInteger res = powerRecursive(p >> 1, history) * powerRecursive(p - (p >> 1), history);
 
             history[p] = res;
 
             return res;
         }
 
-        bool isMagnitudeLessThan(const BigInt& left, const BigInt& right) const {
+        bool isMagnitudeLessThan(const BigInteger& left, const BigInteger& right) const {
             if (left.number.size() < right.number.size()) return true;
             if (left.number.size() > right.number.size()) return false;
 
@@ -214,33 +215,35 @@ namespace estd {
 
     public:
         //Constructors
-        BigInt() { this->operator=(int64_t(0)); };
-
-        template <typename T>
-        BigInt(T val) {
+        BigInteger() { this->operator=(int64_t(0)); };
+        BigInteger(std::string val) { this->operator=(val); }
+        BigInteger(const char* val) { this->operator=(val); }
+        // template for integer types
+        template <class T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+        BigInteger(T val) {
             this->operator=(val);
-        };
+        }
 
         //Assignment operators
-        BigInt& operator=(const char* strNum) {
+        BigInteger& operator=(const char* strNum) {
             *this = std::string(strNum);
             return *this;
         }
 
-        BigInt& operator=(std::string strNum) {
+        BigInteger& operator=(std::string strNum) {
             number.clear();
 
-            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInt");
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInteger");
 
             if (strNum[0] == '-') {
                 isNegative = true;
                 strNum = strNum.substr(1);
             }
 
-            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInt");
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInteger");
 
             for (size_t i = 0; i < strNum.size(); i++) {
-                if (strNum[i] < '0' || strNum[i] > '9') throw std::invalid_argument("Cannot parse BigInt");
+                if (strNum[i] < '0' || strNum[i] > '9') throw std::invalid_argument("Cannot parse BigInteger");
             }
 
             int right = strNum.length();
@@ -257,7 +260,7 @@ namespace estd {
             return *this;
         }
 
-        BigInt& operator=(intmax_t n) {
+        BigInteger& operator=(intmax_t n) {
             number.clear();
             isNegative = false;
             if (n < 0) {
@@ -273,7 +276,7 @@ namespace estd {
             return *this;
         }
 
-        BigInt& operator=(uintmax_t n) {
+        BigInteger& operator=(uintmax_t n) {
             number.clear();
 
             isNegative = false;
@@ -285,10 +288,9 @@ namespace estd {
 
             return *this;
         }
-
-        template <class T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>  // template for integer types
-        BigInt& operator=(T n) {
-            static_assert(std::is_integral<T>::value, "Template cannot be instantiated");
+        // template for integer types
+        template <class T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+        BigInteger& operator=(T n) {
             if constexpr (std::is_unsigned<T>::value) {
                 return operator=(uintmax_t(n));
             } else {
@@ -297,9 +299,9 @@ namespace estd {
         }
 
         //Operations
-        BigInt operator+(const BigInt& right) const {
-            const BigInt& left = *this;
-            BigInt result;
+        BigInteger operator+(const BigInteger& right) const {
+            const BigInteger& left = *this;
+            BigInteger result;
 
             if (left.isNegative && right.isNegative) {
                 result = unsignedAdd(left, right);
@@ -317,18 +319,18 @@ namespace estd {
             return result;
         }
 
-        BigInt& operator+=(const BigInt& right) { return (*this) = (*this) + right; }
+        BigInteger& operator+=(const BigInteger& right) { return (*this) = (*this) + right; }
 
-        BigInt operator-(BigInt right) const {
+        BigInteger operator-(BigInteger right) const {
             right.isNegative = !right.isNegative;
             return operator+(right);
         }
 
-        BigInt& operator-=(const BigInt& right) { return (*this) = (*this) - right; }
+        BigInteger& operator-=(const BigInteger& right) { return (*this) = (*this) - right; }
 
-        BigInt operator*(BigInt right) const {
-            const BigInt& left = *this;
-            BigInt result = 0;
+        BigInteger operator*(BigInteger right) const {
+            const BigInteger& left = *this;
+            BigInteger result = 0;
 
             result = unsignedMultiply(left, right);
             if (left.isNegative != right.isNegative) result.isNegative = true;
@@ -336,10 +338,10 @@ namespace estd {
             return result;
         }
 
-        BigInt& operator*=(const BigInt& right) { return (*this) = (*this) * right; }
+        BigInteger& operator*=(const BigInteger& right) { return (*this) = (*this) * right; }
 
-        BigInt operator/(const BigInt& right) {
-            BigInt& left = *this;
+        BigInteger operator/(const BigInteger& right) {
+            BigInteger& left = *this;
 
             auto result = unsignedDivide(left, right);
             if (left.isNegative != right.isNegative) result.first.isNegative = true;
@@ -347,10 +349,10 @@ namespace estd {
             return result.first;
         }
 
-        BigInt& operator/=(const BigInt& right) { return (*this) = (*this) / right; }
+        BigInteger& operator/=(const BigInteger& right) { return (*this) = (*this) / right; }
 
-        BigInt operator%(const BigInt& right) {
-            BigInt& left = *this;
+        BigInteger operator%(const BigInteger& right) {
+            BigInteger& left = *this;
 
             auto result = unsignedDivide(left, right);
             if (left.isNegative != right.isNegative) result.first.isNegative = true;
@@ -358,12 +360,12 @@ namespace estd {
             return result.second;
         }
 
-        BigInt& operator%=(const BigInt& right) { return (*this) = (*this) % right; }
+        BigInteger& operator%=(const BigInteger& right) { return (*this) = (*this) % right; }
 
-        BigInt power(BigInt p) const {
+        BigInteger power(BigInteger p) const {
             if (p == 0) return 0;
             // auto result = powerIterative(*this, p);
-            std::map<BigInt, BigInt> history = {{1, *this}, {0, 1}};
+            std::map<BigInteger, BigInteger> history = {{1, *this}, {0, 1}};
             auto result = powerRecursive(p, history);
             if ((p.number[p.number.size() - 1] << 31) == 0) result.isNegative = false;
             else
@@ -371,30 +373,30 @@ namespace estd {
             return result;
         }
 
-        // BigInt power(BigDecimal p) const;
+        // BigInteger power(BigDecimal p) const;
 
-        BigInt operator++(int) {
-            BigInt oldThis = *this;
+        BigInteger operator++(int) {
+            BigInteger oldThis = *this;
             *this = *this + 1;
             return oldThis;
         };
-        BigInt& operator++() {
+        BigInteger& operator++() {
             *this = *this + 1;
             return *this;
         };
-        BigInt operator--(int) {
-            BigInt oldThis = *this;
+        BigInteger operator--(int) {
+            BigInteger oldThis = *this;
             *this = *this - 1;
             return oldThis;
         };
-        BigInt& operator--() {
+        BigInteger& operator--() {
             *this = *this - 1;
             return *this;
         };
 
         //Comparators
-        bool operator==(const BigInt& right) const {
-            const BigInt& left = *this;
+        bool operator==(const BigInteger& right) const {
+            const BigInteger& left = *this;
 
             if (left.isZero() && left.isZero()) return true;
             if (left.number.size() != right.number.size()) return false;
@@ -405,20 +407,20 @@ namespace estd {
             return true;
         }
 
-        bool operator!=(const BigInt& right) const { return !(operator==(right)); }
+        bool operator!=(const BigInteger& right) const { return !(operator==(right)); }
 
-        bool operator>(const BigInt& right) const {
-            const BigInt& left = *this;
+        bool operator>(const BigInteger& right) const {
+            const BigInteger& left = *this;
             return right < left;
         }
 
-        bool operator>=(const BigInt& right) const {
-            const BigInt& left = *this;
+        bool operator>=(const BigInteger& right) const {
+            const BigInteger& left = *this;
             return !(left < right);
         }
 
-        bool operator<(const BigInt& right) const {
-            const BigInt& left = *this;
+        bool operator<(const BigInteger& right) const {
+            const BigInteger& left = *this;
             if (left == right) return false;
             if (left.isNegative && !right.isNegative) return true;
             else if (!left.isNegative && right.isNegative)
@@ -428,60 +430,71 @@ namespace estd {
             return isMagnitudeLessThan(left, right);
         }
 
-        bool operator<=(const BigInt& right) const {
-            const BigInt& left = *this;
+        bool operator<=(const BigInteger& right) const {
+            const BigInteger& left = *this;
             return !(left > right);
         }
 
         //TODO: implement power function and optimize this using divide and conq.
-        BigInt& operator<<=(const BigInt& right) {
-            BigInt& result = *this;
-            for (BigInt i = 0; i < right; i++) { result = unsignedMultiply(result, BigInt(2)); }
+        BigInteger& operator<<=(const BigInteger& right) {
+            BigInteger& result = *this;
+            for (BigInteger i = 0; i < right; i++) { result = unsignedMultiply(result, BigInteger(2)); }
             if (result.number.size() == 0) result.number.push_front(0);
             return result;
         }
 
         //TODO: implement power function and optimize this using divide and conq.
-        BigInt& operator>>=(const BigInt& right) {
-            BigInt& result = *this;
-            for (BigInt i = 0; i < right; i++) {
+        BigInteger& operator>>=(const BigInteger& right) {
+            BigInteger& result = *this;
+            for (BigInteger i = 0; i < right; i++) {
                 //essentially we multiply by 5/10 using clever tricks
-                result = unsignedMultiply(result, BigInt(5 * (1000000000 / 10)));
+                result = unsignedMultiply(result, BigInteger(5 * (1000000000 / 10)));
                 result.number.pop_back(); // divides by 1000000000
             }
             if (result.number.size() == 0) result.number.push_front(0);
             return result;
         }
 
-        BigInt operator<<(const BigInt& right) const {
-            BigInt result = *this;
+        BigInteger operator<<(const BigInteger& right) const {
+            BigInteger result = *this;
             result <<= right;
             return result;
         }
 
-        BigInt operator>>(const BigInt& right) const {
-            BigInt result = *this;
+        BigInteger operator>>(const BigInteger& right) const {
+            BigInteger result = *this;
             result >>= right;
             return result;
         }
 
-        friend std::ostream& operator<<(std::ostream& out, const BigInt& right) { return out << right.toString(); }
-        friend std::istream& operator>>(std::istream& in, BigInt& right); //TODO
+        friend std::ostream& operator<<(std::ostream& out, const BigInteger& right) { return out << right.toString(); }
+        friend std::istream& operator>>(std::istream& in, BigInteger& right); //TODO
 
-        uint64_t toUint() const {
-            uint64_t result = 0;
+        uintmax_t toUint() const {
+            uintmax_t result = 0;
             if (number.size() >= 1) result += number[number.size() - 1];
             if (number.size() >= 2) result += number[number.size() - 2] * 1000000000;
             if (number.size() >= 3) result += number[number.size() - 3] * 1000000000 * 1000000000;
             return result;
         }
-        int64_t toInt() const {
-            uint64_t result = toUint();
+        intmax_t toInt() const {
+            uintmax_t result = toUint();
             result <<= 1;
             result >>= 1;
-            if (isNegative) return -int64_t(result);
-            return int64_t(result);
+            if (isNegative) return -intmax_t(result);
+            return intmax_t(result);
         }
+
+        // template for integer types
+        template <class T, typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+        explicit operator T() {
+            if constexpr (std::is_unsigned<T>::value) {
+                return toUint();
+            } else {
+                return toInt();
+            }
+        }
+
         std::string toString() const {
             if (number.size() == 0) return "nan";
             std::stringstream ss;
@@ -516,4 +529,7 @@ namespace estd {
         // DEFINE_BIN_OP(&=) // can be done, but hard for the stored format, will be slow
         // DEFINE_BIN_OP(|=) // can be done, but hard for the stored format, will be slow
     };
+    typedef BigInteger BigInt;
 } // namespace estd
+
+#include <estd/BigDecimal.h> // correct order
