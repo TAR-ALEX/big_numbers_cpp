@@ -31,23 +31,23 @@ int main() {
 
     auto expectedOutput = readLinesFromFile("./expected.txt");
 
-    test.testLambda([&]() {
+    test.testBlock(
         BigInt i = 0;
         BigInt k = nullptr;
         return k != i && k.toString() != i.toString();
-    });
+    );
 
-    test.testLambda([&]() {
+    test.testBlock(
         BigDec i = "0";
         BigDec k = nullptr;
         return k != i && k.toString() != i.toString();
-    });
+    );
 
-    test.testLambda([&]() {
+    test.testBlock(
         BigInt i = 2;
         BigInt k = i.power(9000) - "1" + 1000;
         return k.toString() == expectedOutput.at(0);
-    });
+    );
 
     test.testBool(BigInt{0} == BigInt{"0"});
 

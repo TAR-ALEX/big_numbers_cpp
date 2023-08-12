@@ -14,7 +14,7 @@ private:
 
 public:
     bool verbose = true;
-    void testBool(const char* file, int line, const char* func, bool val) {
+    void __internalTestBool(const char* file, int line, const char* func, bool val) {
         using std::cout;
         using std::endl;
         testNum++;
@@ -27,7 +27,7 @@ public:
         cout << testNum << " (" << file << ":" << line << ")" << endl;
     }
 
-    void testLambda(const char* file, int line, const char* func, std::function<bool()> test) {
+    void __internalTestFunction(const char* file, int line, const char* func, std::function<bool()> test) {
         using std::cout;
         using std::endl;
         testNum++;
@@ -46,10 +46,17 @@ public:
         cout << testNum << " (" << file << ":" << line << ")" << endl;
     }
 
+    inline void testBool(bool) {
+        throw std::runtime_error("This should be expanded to a macro, unit test framework internal fail.");
+    }
+    inline void testBlock(std::function<bool()>) { testBool(true); }
+    inline void testLambda(std::function<bool()>) { testBool(false); }
+
     std::string getStats() {
         return std::string() + "TEST RESULTS: " + std::to_string(passedNum) + "/" + std::to_string(testNum);
     }
 };
 
-#define testBool(...) testBool(__FILE__, __LINE__, __func__, __VA_ARGS__)
-#define testLambda(...) testLambda(__FILE__, __LINE__, __func__, __VA_ARGS__)
+#define testBool(...) __internalTestBool(__FILE__, __LINE__, __func__, __VA_ARGS__)
+#define testBlock(...) __internalTestFunction(__FILE__, __LINE__, __func__, [&]() { __VA_ARGS__ })
+#define testLambda(...) __internalTestFunction(__FILE__, __LINE__, __func__, __VA_ARGS__)
