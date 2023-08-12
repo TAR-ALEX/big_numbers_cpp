@@ -216,7 +216,7 @@ namespace estd {
     public:
         //Constructors
         BigInteger() { this->operator=(int64_t(0)); };
-        BigInteger(std::nullptr_t) {};
+        BigInteger(std::nullptr_t){};
         BigInteger(std::string val) { this->operator=(val); }
         BigInteger(const char* val) { this->operator=(val); }
         // template for integer types
@@ -258,13 +258,14 @@ namespace estd {
                 if (left < 0) left = 0;
             }
             trimLeadingZeros();
+            if (isZero()) { isNegative = false; }
             return *this;
         }
 
         BigInteger& operator=(intmax_t n) {
             number.clear();
 
-            if(n == 0){
+            if (n == 0) {
                 number.push_front(0);
                 return *this;
             }
@@ -286,7 +287,7 @@ namespace estd {
         BigInteger& operator=(uintmax_t n) {
             number.clear();
 
-            if(n == 0){
+            if (n == 0) {
                 number.push_front(0);
                 return *this;
             }

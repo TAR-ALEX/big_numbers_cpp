@@ -48,12 +48,20 @@ namespace estd {
 
         BigDecimal& trimTrailingZeros() {
             while (index >= 9 && parent.number.size() > 0 && parent.number[parent.number.size() - 1] == 0) {
+                if(parent.number.size() == 1 && parent.number[0] == 0) {//special case, return to avoid removing everything
+                    index = 0;
+                    break;
+                }
                 parent.number.pop_back();
                 index -= 9;
             }
             while (index > 0 && parent.number.size() > 0 && parent.number[parent.number.size() - 1] % 10 == 0) {
-                parent.number = parent.operator*(1000000000 / 10).number;
-                if (parent.number.size() > 1) parent.number.pop_back();
+                if(parent.number.size() == 1 && parent.number[0] == 0) {//special case, return to avoid removing everything
+                    index = 0;
+                    break;
+                }
+                parent.number = parent.operator*(1000000000 / 10).number; // great way to divide by 10
+                parent.number.pop_back();
                 index--;
             }
             return *this;
