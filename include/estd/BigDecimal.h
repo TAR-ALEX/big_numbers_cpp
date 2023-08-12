@@ -53,7 +53,7 @@ namespace estd {
             }
             while (index > 0 && parent.number.size() > 0 && parent.number[parent.number.size() - 1] % 10 == 0) {
                 parent.number = parent.operator*(1000000000 / 10).number;
-                parent.number.pop_back();
+                if (parent.number.size() > 1) parent.number.pop_back();
                 index--;
             }
             return *this;
@@ -70,6 +70,7 @@ namespace estd {
 
     public:
         BigDecimal() { this->operator=(int64_t(0)); };
+        BigDecimal(std::nullptr_t) : parent(nullptr){};
         BigDecimal(std::string val) { this->operator=(val); }
         BigDecimal(const char* val) { this->operator=(val); }
         BigDecimal(float val) { this->operator=(val); }
