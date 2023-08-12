@@ -49,6 +49,10 @@ int main() {
         return k.toString() == expectedOutput.at(0);
     });
 
+    test.testBool(BigInt{0} == BigInt{"0"});
+
+    std::cout << test.getStats() << std::endl;
+
 
     // BigInt i = 9;
     // cout << i << endl;
