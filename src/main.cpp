@@ -28,6 +28,8 @@ std::vector<std::string> readLinesFromFile(const std::string& filename) {
 int main() {
     UnitTests test;
 
+    system("python3 ./src/python-reference.py");
+
     auto expectedOutput = readLinesFromFile("./expected.txt");
 
     // compare to primitive testing
