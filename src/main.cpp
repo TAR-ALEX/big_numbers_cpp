@@ -115,6 +115,118 @@ int main() {
         return k != i && k.toString() != i.toString();
     });
 
+    test.testBlock({
+        BigInt i = BigInt{"-1"} - BigInt{"-1"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"1"} - BigInt{"1"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"-1"} + BigInt{"1"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"1"} + BigInt{"-1"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"-2"} - BigInt{"-1"};
+        BigInt k = "-1";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"2"} - BigInt{"1"};
+        BigInt k = "1";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"-2"} + BigInt{"1"};
+        BigInt k = "-1";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"2"} + BigInt{"-1"};
+        BigInt k = "1";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"2"} * BigInt{"0"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"-2"} * BigInt{"-0"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"2"} * BigInt{"-0"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"-2"} * BigInt{"0"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    //division
+
+    test.testBlock({
+        BigInt i = BigInt{"0"} / BigInt{"2"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"0"} / BigInt{"-2"};
+        BigInt k = "0";
+        return k == i && k.toString() == i.toString();
+    });
+
+    //remainder
+
+    test.testBlock({
+        BigInt i = BigInt{"1"} % BigInt{"2"};
+        BigInt k = "1";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"1"} % BigInt{"-2"};
+        BigInt k = "1";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"-1"} % BigInt{"2"};
+        BigInt k = "1";
+        return k == i && k.toString() == i.toString();
+    });
+
+    test.testBlock({
+        BigInt i = BigInt{"-1"} % BigInt{"-2"};
+        BigInt k = "1";
+        return k == i && k.toString() == i.toString();
+    });
+
     //case 0 python
     test.testBlock({
         BigInt i = 2;

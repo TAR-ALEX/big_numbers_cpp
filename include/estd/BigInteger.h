@@ -345,6 +345,9 @@ namespace estd {
             const BigInteger& left = *this;
             BigInteger result;
 
+            if(left.isZero()) return left;
+            if(right.isZero()) return right;
+
             result = unsignedMultiply(left, right);
             if (left.isNegative != right.isNegative) result.isNegative = true;
 
@@ -358,6 +361,7 @@ namespace estd {
 
             auto result = unsignedDivide(left, right);
             if (left.isNegative != right.isNegative) result.first.isNegative = true;
+            if (result.first.isNegative && result.first.isZero()) result.first.isNegative = false;
 
             return result.first;
         }
