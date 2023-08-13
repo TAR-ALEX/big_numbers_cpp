@@ -13,7 +13,7 @@ namespace estd {
 
     protected:
         estd::BigInteger parent = 0;
-        size_t index = 0;
+        size_t index = 0; // this defines how many digits in base 10 are after the decimal point.
 
         void addTrailZeros(size_t z) {
             while (z % 9 != 0) {
@@ -47,16 +47,12 @@ namespace estd {
         }
 
         BigDecimal& trimTrailingZeros() {
-            while (index >= 9 && parent.number.size() > 0 && parent.number[parent.number.size() - 1] == 0) {
-                if(parent.number.size() == 1 && parent.number[0] == 0) {//special case, return to avoid removing everything
-                    index = 0;
-                    break;
-                }
+            while (index >= 9 && parent.number.size() > 1 && parent.number[parent.number.size() - 1] == 0) {
                 parent.number.pop_back();
                 index -= 9;
             }
             while (index > 0 && parent.number.size() > 0 && parent.number[parent.number.size() - 1] % 10 == 0) {
-                if(parent.number.size() == 1 && parent.number[0] == 0) {//special case, return to avoid removing everything
+                if(parent.number.size() == 1 && parent.number[0] == 0) {//special case, this is a zero, return to avoid removing everything
                     index = 0;
                     break;
                 }

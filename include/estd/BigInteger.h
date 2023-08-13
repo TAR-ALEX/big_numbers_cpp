@@ -111,6 +111,7 @@ namespace estd {
             return z2 + z1 + z0;
         }
 
+        // base case for karatsuba
         BigInteger unsignedMultiplySimple(const BigInteger& left, const BigInteger& right) const {
             if (right == 0 || left == 0) return 0;
             uint64_t buffer = 0;
@@ -143,6 +144,7 @@ namespace estd {
             return result;
         }
 
+        // binary search divide
         std::pair<BigInteger, BigInteger> unsignedDivide(BigInteger left, BigInteger right) const {
             std::pair<BigInteger, BigInteger> result = {0, 0};
 
@@ -173,6 +175,7 @@ namespace estd {
             return result;
         }
 
+        //not used as it appears to be a bit slower than the recursive case, does use less memory though
         BigInteger powerIterative(BigInteger x, BigInteger n) const {
             if (n == 0) return 1;
             if (n == 1) return x;
