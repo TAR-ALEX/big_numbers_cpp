@@ -372,6 +372,78 @@ int main() {
         return sum.toString() == "0";
     });
 
+    // Different base parsing, hex octal and binary.
+
+    test.testBlock({
+        BigInt a = BigInt{"0xF125"};
+        BigInt b = BigInt{"61733"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigInt a = BigInt{"0xF1251234897ABCFED"};
+        BigInt b = BigInt{"278021036066128777197"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigInt a = BigInt{"0b11110001001001010001001000110100100010010111101010111100111111101101"};
+        BigInt b = BigInt{"278021036066128777197"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigInt a = BigInt{"0o36111211064422752747755"};
+        BigInt b = BigInt{"278021036066128777197"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigDec a = BigDec{"0xF125"};
+        BigDec b = BigDec{"61733"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigDec a = BigDec{"0xF1251234897ABCFED"};
+        BigDec b = BigDec{"278021036066128777197"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigDec a = BigDec{"0b11110001001001010001001000110100100010010111101010111100111111101101"};
+        BigDec b = BigDec{"278021036066128777197"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigDec a = BigDec{"0o36111211064422752747755"};
+        BigDec b = BigDec{"278021036066128777197"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigDec a = BigDec{"0b0.11"};
+        BigDec b = BigDec{"0.75"};
+        return a == b;
+    });
+    test.testBlock({
+        BigDec a = BigDec{"0x0.8"};
+        BigDec b = BigDec{"0.5"};
+        return a == b;
+    });
+    test.testBlock({
+        BigDec a = BigDec{"0o0.4"};
+        BigDec b = BigDec{"0.5"};
+        return a == b;
+    });
+
+    test.testBlock({
+        BigDec a = BigDec{"0o0.123423452"};
+        BigDec b = BigDec{"0.16316063702106475830078125"};
+        return a == b;
+    });
+
     // Edge Cases for BigDec
 
     test.testBlock({

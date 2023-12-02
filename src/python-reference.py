@@ -1,4 +1,7 @@
 #!/bin/python3
+import sys;
+
+sys.set_int_max_str_digits(0x7FFFFFFF)
 
 with open('expected.txt', 'w') as f:
     # Case 0

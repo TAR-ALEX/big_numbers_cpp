@@ -19,6 +19,92 @@ namespace estd {
 
         inline bool isZero() const { return (number.size() == 1) && (number[0] == 0); }
 
+        inline void parsePositiveBase10(std::string strNum) {
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInteger");
+
+            for (size_t i = 0; i < strNum.size(); i++) {
+                if (strNum[i] < '0' || strNum[i] > '9') throw std::invalid_argument("Cannot parse BigInteger");
+            }
+
+            int right = strNum.length();
+            int left = right - 9;
+            if (left < 0) left = 0;
+            while (left != right) {
+                unsigned long long val = std::stoull(strNum.substr(left, right - left));
+                number.push_front(val);
+                right = left;
+                left = right - 9;
+                if (left < 0) left = 0;
+            }
+            trimLeadingZeros();
+        }
+
+        inline void parsePositiveBase16(std::string strNum) {
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInteger");
+
+            //very basic algorithm to get the job done quickly. not efficient, this is probably not very useful
+
+            *this = 0;
+
+            for (size_t i = 0; i < strNum.size(); i++) {
+                *this *= 16;
+                // probably not portable on windows, but who knows. utf8 all the way!
+                uint8_t c = (uint8_t)strNum[i];
+                if (strNum[i] >= '0' && strNum[i] <= '9') {
+                    c -= '0';
+                } else if (strNum[i] >= 'a' && strNum[i] <= 'f') {
+                    c -= 'a';
+                    c += 10;
+                } else if (strNum[i] >= 'A' && strNum[i] <= 'F') {
+                    c -= 'A';
+                    c += 10;
+                } else {
+                    throw std::invalid_argument("Cannot parse BigInteger");
+                }
+                (*this) += c;
+            }
+        }
+
+        inline void parsePositiveBase8(std::string strNum) {
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInteger");
+
+            //very basic algorithm to get the job done quickly. not efficient, this is probably not very useful
+
+            *this = 0;
+
+            for (size_t i = 0; i < strNum.size(); i++) {
+                *this *= 8;
+                // probably not portable on windows, but who knows. utf8 all the way!
+                uint8_t c = (uint8_t)strNum[i];
+                if (strNum[i] >= '0' && strNum[i] <= '7') {
+                    c -= '0';
+                } else {
+                    throw std::invalid_argument("Cannot parse BigInteger");
+                }
+                (*this) += c;
+            }
+        }
+
+        inline void parsePositiveBase2(std::string strNum) {
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInteger");
+
+            //very basic algorithm to get the job done quickly. not efficient, this is probably not very useful
+
+            *this = 0;
+
+            for (size_t i = 0; i < strNum.size(); i++) {
+                *this *= 2;
+                // probably not portable on windows, but who knows. utf8 all the way!
+                uint8_t c = (uint8_t)strNum[i];
+                if (strNum[i] >= '0' && strNum[i] <= '1') {
+                    c -= '0';
+                } else {
+                    throw std::invalid_argument("Cannot parse BigInteger");
+                }
+                (*this) += c;
+            }
+        }
+
         inline BigInteger& trimLeadingZeros() {
             while (number.size() > 0) {
                 if (number[0] == 0) number.pop_front();
@@ -244,23 +330,16 @@ namespace estd {
                 strNum = strNum.substr(1);
             }
 
-            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigInteger");
-
-            for (size_t i = 0; i < strNum.size(); i++) {
-                if (strNum[i] < '0' || strNum[i] > '9') throw std::invalid_argument("Cannot parse BigInteger");
+            if (strNum.size() >= 2 && strNum.substr(0, 2) == "0x") {
+                parsePositiveBase16(strNum.substr(2));
+            } else if (strNum.size() >= 2 && strNum.substr(0, 2) == "0o") {
+                parsePositiveBase8(strNum.substr(2));
+            } else if (strNum.size() >= 2 && strNum.substr(0, 2) == "0b") {
+                parsePositiveBase2(strNum.substr(2));
+            } else {
+                parsePositiveBase10(strNum); // this one is optimized pretty well
             }
 
-            int right = strNum.length();
-            int left = right - 9;
-            if (left < 0) left = 0;
-            while (left != right) {
-                unsigned long long val = std::stoull(strNum.substr(left, right - left));
-                number.push_front(val);
-                right = left;
-                left = right - 9;
-                if (left < 0) left = 0;
-            }
-            trimLeadingZeros();
             if (isZero()) { isNegative = false; }
             return *this;
         }
@@ -348,8 +427,8 @@ namespace estd {
             const BigInteger& left = *this;
             BigInteger result;
 
-            if(left.isZero()) return left;
-            if(right.isZero()) return right;
+            if (left.isZero()) return left;
+            if (right.isZero()) return right;
 
             result = unsignedMultiply(left, right);
             if (left.isNegative != right.isNegative) result.isNegative = true;
@@ -487,7 +566,9 @@ namespace estd {
             return result;
         }
 
-        inline friend std::ostream& operator<<(std::ostream& out, const BigInteger& right) { return out << right.toString(); }
+        inline friend std::ostream& operator<<(std::ostream& out, const BigInteger& right) {
+            return out << right.toString();
+        }
         inline friend std::istream& operator>>(std::istream& in, BigInteger& right); //TODO
 
         inline uintmax_t toUint() const {

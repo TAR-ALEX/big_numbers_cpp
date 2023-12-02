@@ -52,7 +52,8 @@ namespace estd {
                 index -= 9;
             }
             while (index > 0 && parent.number.size() > 0 && parent.number[parent.number.size() - 1] % 10 == 0) {
-                if(parent.number.size() == 1 && parent.number[0] == 0) {//special case, this is a zero, return to avoid removing everything
+                if (parent.number.size() == 1 &&
+                    parent.number[0] == 0) { //special case, this is a zero, return to avoid removing everything
                     index = 0;
                     break;
                 }
@@ -87,21 +88,16 @@ namespace estd {
 
         inline BigDecimal& operator=(const char* strNum) { return operator=(std::string(strNum)); }
 
-        inline BigDecimal& operator=(std::string strNum) {
+        inline void parsePositiveBase10(std::string strNum) {
             if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigDecimal");
-
-            if (strNum[0] == '-') {
-                parent.isNegative = true;
-                strNum = strNum.substr(1);
-            }
 
             size_t pointIdx = strNum.length();
             for (size_t i = 0; i < strNum.length(); i++) {
                 if (strNum[i] == '.') {
+                    // if there is more than 1 point
                     if (pointIdx != strNum.length()) throw std::invalid_argument("Cannot parse BigDecimal");
                     pointIdx = i;
-                } else if (strNum[i] < '0' || strNum[i] > '9')
-                    throw std::invalid_argument("Cannot parse BigDecimal");
+                }
             }
 
             if (pointIdx != strNum.length()) {
@@ -112,6 +108,63 @@ namespace estd {
             if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigDecimal");
 
             parent.operator=(strNum);
+        }
+
+        inline void parsePositiveBaseN(const uint8_t base, std::string strNum) {
+            if (strNum.size() <= 2) throw std::invalid_argument("Cannot parse BigDecimal");
+
+            std::string prefix = strNum.substr(0, 2);
+
+            size_t pointIdx = strNum.length();
+            for (size_t i = 0; i < strNum.length(); i++) {
+                if (strNum[i] == '.') {
+                    // if there is more than 1 point
+                    if (pointIdx != strNum.length()) throw std::invalid_argument("Cannot parse BigDecimal");
+                    pointIdx = i;
+                }
+            }
+
+            std::string leftNum = strNum.substr(0, pointIdx);
+
+            parent.operator=(leftNum);
+
+            std::string rightNum = "";
+            if (strNum.length() != pointIdx) {
+                rightNum = prefix + strNum.substr(pointIdx + 1);
+
+                BigDecimal dec = BigInteger(rightNum);
+                BigDecimal numDiv2 = rightNum.size() - 2;
+                if (base == 8) numDiv2 *= 3;
+                else if (base == 16)
+                    numDiv2 *= 4;
+                *this += dec * BigDecimal("0.5").power(numDiv2);
+            }
+
+            if (leftNum.size() == 0 && rightNum.size() == 0) throw std::invalid_argument("Cannot parse BigDecimal");
+        }
+
+
+        inline BigDecimal& operator=(std::string strNum) {
+            if (strNum.size() == 0) throw std::invalid_argument("Cannot parse BigDecimal");
+
+            bool isNegative = false;
+
+            if (strNum[0] == '-') {
+                isNegative = true;
+                strNum = strNum.substr(1);
+            }
+
+            if (strNum.substr(0, 2) == "0x") {
+                parsePositiveBaseN(16, strNum);
+            } else if (strNum.substr(0, 2) == "0o") {
+                parsePositiveBaseN(8, strNum);
+            } else if (strNum.substr(0, 2) == "0b") {
+                parsePositiveBaseN(2, strNum);
+            } else {
+                parsePositiveBase10(strNum);
+            }
+
+            parent.isNegative = isNegative;
 
             return trimTrailingZeros();
         }
@@ -255,7 +308,9 @@ namespace estd {
         // BigDecimal operator<<(const BigDecimal& right) const;
         // BigDecimal operator>>(const BigDecimal& right) const;
 
-        inline friend std::ostream& operator<<(std::ostream& out, const BigDecimal& right) { return out << right.toString(); }
+        inline friend std::ostream& operator<<(std::ostream& out, const BigDecimal& right) {
+            return out << right.toString();
+        }
         inline friend std::istream& operator>>(std::istream& in, BigDecimal& right); //TODO
 
         inline uintmax_t toUint() const { return toBigInt().toUint(); }
